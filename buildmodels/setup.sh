@@ -15,7 +15,7 @@ set user_grid = "${user_grid}/config_grids+fv1+2deg_oi0.25_gland20.xml"
 setenv sst_dataset "/glade/work/raeder/Models/CAM_init/SST/avhrr-only-v2.2011-202001_0Z_filled_c200810.nc"
 setenv sst_grid  /glade/work/raeder/Models/CAM_init/SST/domain.ocn.d025.120821.nc
 setenv compset HIST_CAM60_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV
-setenv CESM_ROOT /glade/work/francines/my_cesm_sandbox/
+setenv CESM_ROOT /glade/work/wchapman/cesm2_1_relsd_m5.6_STOCHai//
 
 
 module load python/3.7.9

@@ -68,7 +68,7 @@ def per_run_case_updates(case, user_mods_dir, rundir):
 
 
 def build_base_case(baseroot, basecasename,res, compset, overwrite,
-                    user_mods_dir,psuedo_obs_dir, project, pecount=None,inc_int=6):
+                    , project, pecount=None):
     
     caseroot = os.path.join(baseroot,basecasename)
 
@@ -89,16 +89,24 @@ def build_base_case(baseroot, basecasename,res, compset, overwrite,
             case.set_value("STOP_OPTION","nyears")
             case.set_value("STOP_N", 1)
             case.set_value("JOB_QUEUE", "regular")
+            case.set_value("SSTICE_DATA_FILENAME", "/glade/scratch/wchapman/SST_avhrr/avhrr_v2.1/avhrr_v2.1-only-v2.19810901_cat_20111231_filled_c221104.nc")
+            case.set_value("SSTICE_GRID_FILENAME", "/glade/scratch/wchapman/SST_avhrr/avhrr_v2.1/avhrr_v2.1-only-v2.19810901_cat_20111231_filled_c221104.nc")
+            case.set_value("CALENDAR", "GREGORIAN")
+            case.set_value("RUN_REFDATE", "1982-01-01")
+            case.set_value("RUN_REFDATE", "1982-01-01")
+            case.set_value("JOB_WALLCLOCK_TIME", "03:30:00")
+            case.set_value("SSTICE_YEAR_ALIGN", "1981")
+            case.set_value("SSTICE_YEAR_START", "1981")
+            case.set_value("SSTICE_YEAR_END", "2011")
+
 
             #user_namelist_cam:
 
         rundir = case.get_value("RUNDIR")
         per_run_case_updates(case, user_mods_dir, rundir)
         update_namelist(baseroot,basecasename,psuedo_obs_dir)
-        stage_current_time(rundir,basecasename)
+        stage_source_mods(basecasename, './sourcemods/')
         print('...building case...')
-        #print(caseroot)
-        #print(case)
         build.case_build(caseroot, case=case, save_build_provenance=False)
         print('...done build...')
 
@@ -106,97 +114,343 @@ def build_base_case(baseroot, basecasename,res, compset, overwrite,
 
 def update_namelist(baseroot,basecasename,psuedo_obs_dir):
     
-    caseroot = os.path.join(baseroot,basecasename)
-    fn_nl = caseroot+'/user_nl_cam'
     
-    lines =[" ",
-        "nhtfrq = 0, -"+str(inc_int),
-        "mfilt = 1, 1",
-        "ndens = 2, 2",
-        "fincl2 = 'U:A','V:A', 'Q:A', 'T:A', 'PS:A', 'Nudge_U', 'Nudge_V', 'Nudge_T', 'Target_U', 'Target_V', 'Target_T'",
-        "&nudging_nl",
-         " Nudge_Model        =.true.",
-         " Nudge_Path         ='"+psuedo_obs_dir+"'",
-         " Nudge_File_Template='/test_pseudoobs_UVT.h1.%y-%m-%d-%s.nc'",
-         " Nudge_Beg_Year =1979",
-         " Nudge_Beg_Month=1",
-         " Nudge_Beg_Day=1",
-         " Nudge_End_Year =2019",
-         " Nudge_End_Month=8",
-         " Nudge_End_Day  =31",
-         " Nudge_Uprof =2",
-         " Nudge_Vprof =2",
-         " Nudge_Tprof =0",
-         " Nudge_Qprof =0",
-         " Nudge_PSprof =0",
-         " Nudge_Ucoef =1.0",
-         " Nudge_Vcoef =1.0",
-         " Nudge_Tcoef =1.0",
-         " Nudge_Qcoef =0.0",
-         " Nudge_Force_Opt = 1",
-         " Nudge_Times_Per_Day = 4",
-         " Model_Times_Per_Day = 48",
-         " Nudge_TimeScale_Opt = 0",
-         " Nudge_Vwin_Lindex = 6.",
-         " Nudge_Vwin_Ldelta = 0.001",
-         " Nudge_Vwin_Hindex = 33.",
-         " Nudge_Vwin_Hdelta = 0.001",
-         " Nudge_Vwin_Invert = .false.",
-         " Nudge_Hwin_lat0     = 0.",
-         " Nudge_Hwin_latWidth = 999.",
-         " Nudge_Hwin_latDelta = 1.0",
-         " Nudge_Hwin_lon0     = 180.",
-         " Nudge_Hwin_lonWidth = 999.",
-         " Nudge_Hwin_lonDelta = 1.0",
-         " Nudge_Hwin_Invert   = .false.",
-        ]
-    
-    with open(fn_nl, "a") as file:
-        for line in lines:
-            file.write(line + "\n")
+    if basecasename =='f.e21.DAcompset.f09_d025_Seasonal_DA_stochai_UV_05_1982_V2':
+        caseroot = os.path.join(baseroot,basecasename)
+        fn_nl = caseroot+'/user_nl_cam'
 
-def make_findtime(baseroot,basecasename,rundir):
-    print("this is not done")
-    lines=[""]
-    
-    fn_ft = rundir+'/find_time.txt'
-    
-    with open(fn_nl, "a") as file:
-        for line in lines:
-            file.write(line + "\n")
+        lines =[" ",
+            "nhtfrq = 0, -24",
+            "mfilt = 1, 1",
+            "ndens = 2, 2",
+            "fincl2 = 'U', 'V', 'T', 'Q', 'CLOUD', 'SST', 'CLDICE', 'CLDLIQ', 'TAUX', 'TAUY', 'PSL','PS','Z500','Nudge_U', 'Nudge_V', 'Nudge_Q', 'Nudge_T', 'Stochai_U','Stochai_V','Stochai_T','Stochai_Q',
+            "&nudging_nl",
+             " Nudge_Model        =.true.",
+             " Nudge_Path         ='/glade/scratch/wchapman/inputdata/nudging/DAInc_1000/',
+             " Nudge_File_Template='DA_INCS.%y-%m-%d-%s.nc'",
+             " Nudge_Beg_Year =1981",
+             " Nudge_Beg_Month=1",
+             " Nudge_Beg_Day=1",
+             " Nudge_End_Year =2019",
+             " Nudge_End_Month=8",
+             " Nudge_End_Day  =31",
+             " Nudge_Uprof =2",
+             " Nudge_Vprof =2",
+             " Nudge_Tprof =0",
+             " Nudge_Qprof =0",
+             " Nudge_PSprof =0",
+             " Nudge_Ucoef =1.0",
+             " Nudge_Vcoef =1.0",
+             " Nudge_Tcoef =1.0",
+             " Nudge_Qcoef =0.0",
+             " Nudge_Force_Opt = 1",
+             " Nudge_Times_Per_Day = 4",
+             " Model_Times_Per_Day = 48",
+             " Nudge_TimeScale_Opt = 0",
+             " Nudge_Vwin_Lindex = 6.",
+             " Nudge_Vwin_Ldelta = 0.001",
+             " Nudge_Vwin_Hindex = 33.",
+             " Nudge_Vwin_Hdelta = 0.001",
+             " Nudge_Vwin_Invert = .false.",
+             " Nudge_Hwin_lat0     = 0.",
+             " Nudge_Hwin_latWidth = 999.",
+             " Nudge_Hwin_latDelta = 1.0",
+             " Nudge_Hwin_lon0     = 180.",
+             " Nudge_Hwin_lonWidth = 999.",
+             " Nudge_Hwin_lonDelta = 1.0",
+             " Nudge_Hwin_Invert   = .false.",
+                
+             "Stochai_Model        =.true.",
+             "Stochai_Path         ='/glade/scratch/wchapman/inputdata/nudging/DA_StochAI/',
+             "Stochai_File_Template='Stochai_DA_INCS.%y-%m-%d-%s.nc'",
+             "Stochai_Beg_Year =1981",
+             "Stochai_Beg_Month=1",
+             "Stochai_Beg_Day=1",
+             "Stochai_End_Year =2019",
+             "Stochai_End_Month=8",
+             "Stochai_End_Day  =31",
+             "Stochai_Uprof =2",
+             "Stochai_Vprof =2",
+             "Stochai_Tprof =0",
+             "Stochai_Qprof =0",
+             "Stochai_PSprof =0",
+             "Stochai_Ucoef =1.0",
+             "Stochai_Vcoef =1.0",
+             "Stochai_Tcoef =1.0",
+             "Stochai_Qcoef =0.0",
+             "Stochai_Force_Opt = 1",
+             "Stochai_Times_Per_Day = 4",
+             "Model_Times_Per_Day_Stochai = 48",
+             "Stochai_TimeScale_Opt = 0",
+             "Stochai_Vwin_Lindex = 6.",
+             "Stochai_Vwin_Ldelta = 0.001",
+             "Stochai_Vwin_Hindex = 33.",
+             "Stochai_Vwin_Hdelta = 0.001",
+             "Stochai_Vwin_Invert = .false.",
+             "Stochai_Hwin_lat0     = 0.",
+             "Stochai_Hwin_latWidth = 999.",
+             "Stochai_Hwin_latDelta = 1.0",
+             "Stochai_Hwin_lon0     = 180.",
+             "Stochai_Hwin_lonWidth = 999.",
+             "Stochai_Hwin_lonDelta = 1.0",
+             "Stochai_Hwin_Invert   = .false.",
+            ]
+
+        with open(fn_nl, "a") as file:
+            for line in lines:
+                file.write(line + "\n")
+                
+    elif basecasename =='f.e21.DAcompset.f09_d025_Seasonal_stochai_UV_05_1982_MJO_v3':
+        
+        caseroot = os.path.join(baseroot,basecasename)
+        fn_nl = caseroot+'/user_nl_cam'
+
+        lines =[" ",
+            "nhtfrq = 0, -24",
+            "mfilt = 1, 1",
+            "ndens = 2, 2",
+            "fincl2 = 'U', 'V', 'T', 'Q', 'CLOUD', 'SST', 'CLDICE', 'CLDLIQ', 'TAUX', 'TAUY', 'PSL','PS','Z500','Nudge_U', 'Nudge_V', 'Nudge_Q', 'Nudge_T', 'Stochai_U','Stochai_V','Stochai_T','Stochai_Q',
+            "&nudging_nl",
+             " Nudge_Model        =.true.",
+             " Nudge_Path         ='/glade/scratch/wchapman/inputdata/nudging/NudgingInc_UV/',
+             " Nudge_File_Template='NUDGING_INCS.%y-%m-%d-%s.nc'",
+             " Nudge_Beg_Year =1981",
+             " Nudge_Beg_Month=1",
+             " Nudge_Beg_Day=1",
+             " Nudge_End_Year =2019",
+             " Nudge_End_Month=8",
+             " Nudge_End_Day  =31",
+             " Nudge_Uprof =2",
+             " Nudge_Vprof =2",
+             " Nudge_Tprof =0",
+             " Nudge_Qprof =0",
+             " Nudge_PSprof =0",
+             " Nudge_Ucoef =1.0",
+             " Nudge_Vcoef =1.0",
+             " Nudge_Tcoef =1.0",
+             " Nudge_Qcoef =0.0",
+             " Nudge_Force_Opt = 1",
+             " Nudge_Times_Per_Day = 4",
+             " Model_Times_Per_Day = 48",
+             " Nudge_TimeScale_Opt = 0",
+             " Nudge_Vwin_Lindex = 6.",
+             " Nudge_Vwin_Ldelta = 0.001",
+             " Nudge_Vwin_Hindex = 33.",
+             " Nudge_Vwin_Hdelta = 0.001",
+             " Nudge_Vwin_Invert = .false.",
+             " Nudge_Hwin_lat0     = 0.",
+             " Nudge_Hwin_latWidth = 999.",
+             " Nudge_Hwin_latDelta = 1.0",
+             " Nudge_Hwin_lon0     = 180.",
+             " Nudge_Hwin_lonWidth = 999.",
+             " Nudge_Hwin_lonDelta = 1.0",
+             " Nudge_Hwin_Invert   = .false.",
+            ]
+
+        with open(fn_nl, "a") as file:
+            for line in lines:
+                file.write(line + "\n")
+                
+    elif basecasename =='f.e21.DAcompset.f09_d025_Seasonal_stochai_UV_05_1982_MJO_v3':
+        caseroot = os.path.join(baseroot,basecasename)
+        fn_nl = caseroot+'/user_nl_cam'
+
+        lines =[" ",
+            "nhtfrq = 0, -24",
+            "mfilt = 1, 1",
+            "ndens = 2, 2",
+            "fincl2 = 'U', 'V', 'T', 'Q', 'CLOUD', 'SST', 'CLDICE', 'CLDLIQ', 'TAUX', 'TAUY', 'PSL','PS','Z500','Nudge_U', 'Nudge_V', 'Nudge_Q', 'Nudge_T', 'Stochai_U','Stochai_V','Stochai_T','Stochai_Q',
+            "&nudging_nl",
+             " Nudge_Model        =.true.",
+             " Nudge_Path         ='/glade/scratch/wchapman/inputdata/nudging/StochAI_UV/',
+             " Nudge_File_Template='NUDGING_INCS.%y-%m-%d-%s.nc'",
+             " Nudge_Beg_Year =1981",
+             " Nudge_Beg_Month=1",
+             " Nudge_Beg_Day=1",
+             " Nudge_End_Year =2019",
+             " Nudge_End_Month=8",
+             " Nudge_End_Day  =31",
+             " Nudge_Uprof =2",
+             " Nudge_Vprof =2",
+             " Nudge_Tprof =0",
+             " Nudge_Qprof =0",
+             " Nudge_PSprof =0",
+             " Nudge_Ucoef =1.0",
+             " Nudge_Vcoef =1.0",
+             " Nudge_Tcoef =1.0",
+             " Nudge_Qcoef =0.0",
+             " Nudge_Force_Opt = 1",
+             " Nudge_Times_Per_Day = 4",
+             " Model_Times_Per_Day = 48",
+             " Nudge_TimeScale_Opt = 0",
+             " Nudge_Vwin_Lindex = 6.",
+             " Nudge_Vwin_Ldelta = 0.001",
+             " Nudge_Vwin_Hindex = 33.",
+             " Nudge_Vwin_Hdelta = 0.001",
+             " Nudge_Vwin_Invert = .false.",
+             " Nudge_Hwin_lat0     = 0.",
+             " Nudge_Hwin_latWidth = 999.",
+             " Nudge_Hwin_latDelta = 1.0",
+             " Nudge_Hwin_lon0     = 180.",
+             " Nudge_Hwin_lonWidth = 999.",
+             " Nudge_Hwin_lonDelta = 1.0",
+             " Nudge_Hwin_Invert   = .false.",
+                
+             "Stochai_Model        =.true.",
+             "Stochai_Path         ='/glade/scratch/wchapman/inputdata/nudging/StochAI_UV/',
+             "Stochai_File_Template='Stochai_INCS.%y-%m-%d-%s.nc'",
+             "Stochai_Beg_Year =1981",
+             "Stochai_Beg_Month=1",
+             "Stochai_Beg_Day=1",
+             "Stochai_End_Year =2019",
+             "Stochai_End_Month=8",
+             "Stochai_End_Day  =31",
+             "Stochai_Uprof =2",
+             "Stochai_Vprof =2",
+             "Stochai_Tprof =0",
+             "Stochai_Qprof =0",
+             "Stochai_PSprof =0",
+             "Stochai_Ucoef =1.0",
+             "Stochai_Vcoef =1.0",
+             "Stochai_Tcoef =1.0",
+             "Stochai_Qcoef =0.0",
+             "Stochai_Force_Opt = 1",
+             "Stochai_Times_Per_Day = 4",
+             "Model_Times_Per_Day_Stochai = 48",
+             "Stochai_TimeScale_Opt = 0",
+             "Stochai_Vwin_Lindex = 6.",
+             "Stochai_Vwin_Ldelta = 0.001",
+             "Stochai_Vwin_Hindex = 33.",
+             "Stochai_Vwin_Hdelta = 0.001",
+             "Stochai_Vwin_Invert = .false.",
+             "Stochai_Hwin_lat0     = 0.",
+             "Stochai_Hwin_latWidth = 999.",
+             "Stochai_Hwin_latDelta = 1.0",
+             "Stochai_Hwin_lon0     = 180.",
+             "Stochai_Hwin_lonWidth = 999.",
+             "Stochai_Hwin_lonDelta = 1.0",
+             "Stochai_Hwin_Invert   = .false.",
+            ]
+
+        with open(fn_nl, "a") as file:
+            for line in lines:
+                file.write(line + "\n")
+                
+    elif basecasename =='f.e21.DAcompset.f09_d025_Seasonal_stochai_UV_00_1982':
+        
+        caseroot = os.path.join(baseroot,basecasename)
+        fn_nl = caseroot+'/user_nl_cam'
+
+        lines =[" ",
+            "nhtfrq = 0, -24",
+            "mfilt = 1, 1",
+            "ndens = 2, 2",
+            "fincl2 = 'U', 'V', 'T', 'Q', 'CLOUD', 'SST', 'CLDICE', 'CLDLIQ', 'TAUX', 'TAUY', 'PSL','PS','Z500','Nudge_U', 'Nudge_V', 'Nudge_Q', 'Nudge_T', 'Stochai_U','Stochai_V','Stochai_T','Stochai_Q',
+            "&nudging_nl",
+             " Nudge_Model        =.true.",
+             " Nudge_Path         ='/glade/scratch/wchapman/inputdata/nudging/DAInc_1000/',
+             " Nudge_File_Template='DA_INCS.%y-%m-%d-%s.nc'",
+             " Nudge_Beg_Year =1981",
+             " Nudge_Beg_Month=1",
+             " Nudge_Beg_Day=1",
+             " Nudge_End_Year =2019",
+             " Nudge_End_Month=8",
+             " Nudge_End_Day  =31",
+             " Nudge_Uprof =2",
+             " Nudge_Vprof =2",
+             " Nudge_Tprof =0",
+             " Nudge_Qprof =0",
+             " Nudge_PSprof =0",
+             " Nudge_Ucoef =1.0",
+             " Nudge_Vcoef =1.0",
+             " Nudge_Tcoef =1.0",
+             " Nudge_Qcoef =0.0",
+             " Nudge_Force_Opt = 1",
+             " Nudge_Times_Per_Day = 4",
+             " Model_Times_Per_Day = 48",
+             " Nudge_TimeScale_Opt = 0",
+             " Nudge_Vwin_Lindex = 6.",
+             " Nudge_Vwin_Ldelta = 0.001",
+             " Nudge_Vwin_Hindex = 33.",
+             " Nudge_Vwin_Hdelta = 0.001",
+             " Nudge_Vwin_Invert = .false.",
+             " Nudge_Hwin_lat0     = 0.",
+             " Nudge_Hwin_latWidth = 999.",
+             " Nudge_Hwin_latDelta = 1.0",
+             " Nudge_Hwin_lon0     = 180.",
+             " Nudge_Hwin_lonWidth = 999.",
+             " Nudge_Hwin_lonDelta = 1.0",
+             " Nudge_Hwin_Invert   = .false.",
+            ]
+
+        with open(fn_nl, "a") as file:
+            for line in lines:
+                file.write(line + "\n")
+            
+    elif basecasename =='f.e21.DAcompset.f09_d025_free_MJO_1982':
+        
+        caseroot = os.path.join(baseroot,basecasename)
+        fn_nl = caseroot+'/user_nl_cam'
+
+        lines =[" ",
+            "nhtfrq = 0, -24",
+            "mfilt = 1, 1",
+            "ndens = 2, 2",
+            "fincl2 = 'U', 'V', 'T', 'Q', 'CLOUD', 'SST', 'CLDICE', 'CLDLIQ', 'TAUX', 'TAUY', 'PSL','PS','Z500',
+            ]
+
+        with open(fn_nl, "a") as file:
+            for line in lines:
+                file.write(line + "\n")
+            
 
 def _main_func(description):
-    inc_int=6
-    psuedo_obs_dir='/path/to/work/directory/pseudoobs_V2' #replace path !!!must be your work dir!!!
-    create_directory(psuedo_obs_dir)
-    safe_copy('/path/to/this/directory/Pseudo_Obs_Files/Template_Nudging_File.nc',psuedo_obs_dir) #replace path git
     
-    archive_dir = '/path/to/scratch/directory/store_super_cam5_cam6' #replace path !!!must be your scratch dir!!!
-    create_directory(archive_dir)
-    
-    #one -- CAM5
+    # -- CNTRL
     baseroot="/path/to/this/directory" #replace path
-    basecasename5="CAM5_MODNAME"
+    basecasename5="f.e21.DAcompset.f09_d025_free_MJO_1982"
     res = "f09_g16"
-    compset= "HIST_CAM50_CLM50%SP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV"
-    user_mods_dir="/path/to/this/directory/Source_Mod_Files" #replace path to git directory
-    overwrite = True
+    compset= "HIST_CAM60_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV"
+    overwrite = False
     caseroot = build_base_case(baseroot, basecasename5, res,
-                            compset, overwrite, user_mods_dir,psuedo_obs_dir,project="P54048000",inc_int=inc_int) #replace path /project code
+                            compset, overwrite,project="P54048000") #replace path /project code
     
-    #two -- CAM6
+    # -- Nu.M1.S0
     baseroot="/path/to/this/directory" #replace path
-    basecasename6="CAM6_MODNAME"
+    basecasename5="f.e21.DAcompset.f09_d025_Seasonal_stochai_UV_00_1982"
     res = "f09_g16"
-    compset= "FHIST"
-    user_mods_dir="/path/to/this/directory/Source_Mod_Files" #replace path
-    overwrite = True
-    caseroot = build_base_case(baseroot, basecasename6, res,
-                            compset, overwrite, user_mods_dir,psuedo_obs_dir,project="P54048000",inc_int=inc_int) #replace path /project code
+    compset= "HIST_CAM60_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV"
+    overwrite = False
+    caseroot = build_base_case(baseroot, basecasename5, res,
+                            compset, overwrite,project="P54048000") #replace path /project code
     
-    #to do! 
-    #replace all of the file paths in the "Fake_DA.py" path and write it to this directory. 
-
+    # -- Nu.M1.S.5
+    baseroot="/path/to/this/directory" #replace path
+    basecasename5="f.e21.DAcompset.f09_d025_Seasonal_stochai_UV_05_1982_MJO_v3"
+    res = "f09_g16"
+    compset= "HIST_CAM60_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV"
+    overwrite = False
+    caseroot = build_base_case(baseroot, basecasename5, res,
+                            compset, overwrite,project="P54048000") #replace path /project code
+    
+    # -- DArt.M1.S0
+    baseroot="/path/to/this/directory" #replace path
+    basecasename5="f.e21.DAcompset.f09_d025_Seasonal_DA_stochai_UV_00_1982"
+    res = "f09_g16"
+    compset= "HIST_CAM60_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV"
+    overwrite = False
+    caseroot = build_base_case(baseroot, basecasename5, res,
+                            compset, overwrite,project="P54048000") #replace path /project code
+    
+    # -- DArt.M1.S.5
+    baseroot="/path/to/this/directory" #replace path
+    basecasename5="f.e21.DAcompset.f09_d025_Seasonal_DA_stochai_UV_05_1982"
+    res = "f09_g16"
+    compset= "HIST_CAM60_CLM50%BGC-CROP_CICE%PRES_DOCN%DOM_MOSART_SGLC_SWAV"
+    overwrite = False
+    caseroot = build_base_case(baseroot, basecasename5, res,
+                            compset, overwrite,project="P54048000") #replace path /project code
+    
     
 
 if __name__ == "__main__":
