@@ -1,5 +1,6 @@
-# Repo for MITA_SITA_Adjustments 
+# Repo for MITA_SITA_Adjustments In CESM2/CAM6 
 
+# Paper:
 # Benefits of Deterministic and Stochastic Tendency Adjustments in a Climate Model
 
 William E. Chapman & Judith Berner 
