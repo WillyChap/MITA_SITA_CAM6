@@ -26,5 +26,5 @@ We develop and compare model-error representation schemes derived from data assi
 
 # Stream Function Tendency cookbooks and calculations:
 
-- ./figure_notebooks/
+- ./figure_notebooks/Stream_Function_Tendency_Fig10_11_12/
 
